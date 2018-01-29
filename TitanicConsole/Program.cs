@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualBasic.FileIO;
 
 namespace TitanicConsole
@@ -9,10 +11,28 @@ namespace TitanicConsole
     {
         static void Main(string[] args)
         {
-            var passengers = LoadRawData(@"Data\train.csv");
+            var passengers = LoadRawData(@"Data\train.csv").ToList();
 
             Console.WriteLine($"There are {passengers.Count()} passengers in the file");
+
+            var results = new List<Tuple<int, bool>>();
+
+            foreach (var passenger in passengers)
+            {
+                results.Add(new Tuple<int, bool>(passenger.PassengerId, Survived(passenger)));
+            }
+
+            var path = @"c:\temp\export.csv";
+
+            ExportTestResults(results, path);
+
+            Console.WriteLine($"Saved to {path}");
             Console.ReadLine();
+        }
+
+        private static bool Survived(Passenger passenger)
+        {
+            return false;
         }
 
         private static IEnumerable<Passenger> LoadRawData(string path)
@@ -44,6 +64,20 @@ namespace TitanicConsole
                     };
                 }
             }
+        }
+
+        private static void ExportTestResults(List<Tuple<int, bool>> data, string path)
+        {
+            var result = new List<string> {"PassengerId,Survived"};
+
+            result.AddRange(data.Select(item => $"{item.Item1},{(item.Item2 ? 1 : 0)}"));
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            File.AppendAllLines(path, result);
         }
     }
 }
