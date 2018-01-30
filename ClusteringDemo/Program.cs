@@ -1,5 +1,10 @@
 ﻿namespace ClusteringDemo
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Numerics;
+
     class Program
     {
         static void Main(string[] args)
@@ -14,20 +19,41 @@
             //Expected results { 67.3, 97.0 }, { 74.0, 77.1 }, { 61.3, 57.5 }
         }
 
-        private static double[][] GetRawData()
+        private static List<Vector2> GetRawData()
         {
-            var rawData = new double[10][];
-            rawData[0] = new double[] { 73, 72.6 };
-            rawData[1] = new double[] { 61, 54.4 };
-            rawData[2] = new double[] { 67, 99.9 };
-            rawData[3] = new double[] { 68, 97.3 };
-            rawData[4] = new double[] { 62, 59.0 };
-            rawData[5] = new double[] { 75, 81.6 };
-            rawData[6] = new double[] { 74, 77.1 };
-            rawData[7] = new double[] { 66, 97.3 };
-            rawData[8] = new double[] { 68, 93.3 };
-            rawData[9] = new double[] { 61, 59.0 };
-            return rawData;
+            return new List<Vector2>
+            {
+                new Vector2(73, 72.6f),
+                new Vector2(61, 54.4f),
+                new Vector2(67, 99.9f),
+                new Vector2(68, 97.3f),
+                new Vector2(62, 59.0f),
+                new Vector2(75, 81.6f),
+                new Vector2(74, 77.1f),
+                new Vector2(66, 97.3f),
+                new Vector2(68, 93.3f),
+                new Vector2(61, 59.0f)
+            };
+        }
+
+        private static Vector2 CalculateCentroid(List<Vector2> items)
+        {
+            var result = items.Aggregate(Vector2.Zero, (current, point) => current + point);
+            result /= items.Count;
+
+            return result;
+        }
+
+        private static int[] GetRandomStart()
+        {
+            var rand = new Random();
+            var rtnlist = new List<int>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                rtnlist.Add(rand.Next(3));
+            }
+            return rtnlist.ToArray();
         }
     }
 }
