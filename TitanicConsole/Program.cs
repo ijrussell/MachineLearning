@@ -11,20 +11,22 @@ namespace TitanicConsole
     {
         static void Main(string[] args)
         {
-            var passengers = LoadRawData(@"Data\train.csv").ToList();
+            var passengers = LoadTrainData().ToList();
 
             Console.WriteLine($"There are {passengers.Count()} passengers in the file");
 
-            var results = new List<Tuple<int, bool>>();
+            //TODO: Use training data to build an algorithm to determine if a passenger survived or not.
 
-            foreach (var passenger in passengers)
+            var testData = LoadTestData().ToList();
+
+            foreach (var passenger in testData)
             {
-                results.Add(new Tuple<int, bool>(passenger.PassengerId, Survived(passenger)));
+                passenger.Survived = Survived(passenger);
             }
 
             var path = @"c:\temp\export.csv";
 
-            ExportTestResults(results, path);
+            ExportTestResults(testData, path);
 
             Console.WriteLine($"Saved to {path}");
             Console.ReadLine();
@@ -35,9 +37,9 @@ namespace TitanicConsole
             return false;
         }
 
-        private static IEnumerable<Passenger> LoadRawData(string path)
+        private static IEnumerable<Passenger> LoadTrainData()
         {
-            using (var parser = new TextFieldParser(path))
+            using (var parser = new TextFieldParser(@"Data\train.csv"))
             {
                 parser.SetDelimiters(new string[] { "," });
                 parser.HasFieldsEnclosedInQuotes = true;
@@ -66,11 +68,41 @@ namespace TitanicConsole
             }
         }
 
-        private static void ExportTestResults(List<Tuple<int, bool>> data, string path)
+        private static IEnumerable<Passenger> LoadTestData()
+        {
+            using (var parser = new TextFieldParser(@"Data\test.csv"))
+            {
+                parser.SetDelimiters(new string[] { "," });
+                parser.HasFieldsEnclosedInQuotes = true;
+
+                // Skip over header line.
+                parser.ReadLine();
+                while (!parser.EndOfData)
+                {
+                    var line = parser.ReadFields();
+                    yield return new Passenger
+                    {
+                        PassengerId = int.Parse(line[0]),
+                        Pclass = int.Parse(line[1]),
+                        Name = line[2],
+                        Sex = line[3],
+                        Age = !string.IsNullOrWhiteSpace(line[4]) ? decimal.Parse(line[4]) : 0m,
+                        SibSp = int.Parse(line[5]),
+                        Parch = int.Parse(line[6]),
+                        Ticket = line[7],
+                        Fare = !string.IsNullOrWhiteSpace(line[8]) ? decimal.Parse(line[8]) : 0m,
+                        Cabin = line[9],
+                        Embarked = line[10]
+                    };
+                }
+            }
+        }
+
+        private static void ExportTestResults(List<Passenger> data, string path)
         {
             var result = new List<string> {"PassengerId,Survived"};
 
-            result.AddRange(data.Select(item => $"{item.Item1},{(item.Item2 ? 1 : 0)}"));
+            result.AddRange(data.Select(item => $"{item.PassengerId},{(item.Survived ? 1 : 0)}"));
 
             if (File.Exists(path))
             {
